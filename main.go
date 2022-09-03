@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/zakariawahyu/go-echo-mongo-basic/config"
+	"github.com/zakariawahyu/go-echo-mongo-basic/routes"
 	"net/http"
 )
 
@@ -17,6 +18,9 @@ func main() {
 			"message": "Hello world form Echo and MongoDB",
 		})
 	})
+
+	// Define Routes
+	routes.UserRoutes(e)
 
 	e.Logger.Fatal(e.Start("localhost:8081"))
 }

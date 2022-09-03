@@ -9,8 +9,9 @@ import (
 	"time"
 )
 
+var env = EnvMongo()
+
 func ConnectDB() *mongo.Client {
-	env := EnvMongo()
 	connPattern := "mongodb://%v:%v@%v:%v"
 	if env.Username == "" {
 		connPattern = "mongodb://%s%s%v:%v"
@@ -47,6 +48,5 @@ var DB *mongo.Client = ConnectDB()
 
 // Get Database Collection
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	env := EnvMongo()
 	return client.Database(env.DBName).Collection(collectionName)
 }
