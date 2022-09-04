@@ -17,6 +17,40 @@ import (
 var userCollection *mongo.Collection = config.GetCollection(config.DB, "users")
 var validate = validator.New()
 
+func GetAllUser(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	var users []model.User
+	defer cancel()
+
+	result, err := userCollection.Find(ctx, bson.M{})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Result:  err.Error(),
+		})
+	}
+
+	defer result.Close(ctx)
+	for result.Next(ctx) {
+		var user model.User
+		if err = result.Decode(&user); err != nil {
+			return c.JSON(http.StatusInternalServerError, response.UserResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error",
+				Result:  err.Error(),
+			})
+		}
+		users = append(users, user)
+	}
+
+	return c.JSON(http.StatusOK, response.UserResponse{
+		Status:  http.StatusOK,
+		Message: "success",
+		Result:  users,
+	})
+}
+
 func CreateUser(c echo.Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	var user model.User
@@ -93,5 +127,86 @@ func GetUserById(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "success",
 		Result:  user,
+	})
+}
+
+func UpdateUser(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	id := c.Param("id")
+	var user model.User
+	defer cancel()
+
+	objectId, errObj := primitive.ObjectIDFromHex(id)
+	if errObj != nil {
+		return c.JSON(http.StatusInternalServerError, response.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Result:  errObj.Error(),
+		})
+	}
+
+	//validate request body
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, response.UserResponse{
+			Status:  http.StatusBadRequest,
+			Message: "error",
+			Result:  err.Error(),
+		})
+	}
+
+	//validation
+	if validateErr := validate.Struct(&user); validateErr != nil {
+		return c.JSON(http.StatusBadRequest, response.UserResponse{
+			Status:  http.StatusBadRequest,
+			Message: "error",
+			Result:  validateErr.Error(),
+		})
+	}
+
+	updateUser := bson.M{"firstname": user.FirstName, "lastname": user.LastName, "location": user.Location, "title": user.Title}
+
+	result, err := userCollection.UpdateOne(ctx, bson.M{"id": objectId}, bson.M{"$set": updateUser})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Result:  errObj.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, response.UserResponse{
+		Status:  http.StatusOK,
+		Message: "error",
+		Result:  result,
+	})
+}
+
+func DeleteUser(c echo.Context) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	id := c.Param("id")
+	defer cancel()
+
+	objectID, errObj := primitive.ObjectIDFromHex(id)
+	if errObj != nil {
+		return c.JSON(http.StatusInternalServerError, response.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Result:  errObj.Error(),
+		})
+	}
+
+	result, err := userCollection.DeleteOne(ctx, bson.M{"id": objectID})
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, response.UserResponse{
+			Status:  http.StatusInternalServerError,
+			Message: "error",
+			Result:  errObj.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, response.UserResponse{
+		Status:  http.StatusOK,
+		Message: "error",
+		Result:  result,
 	})
 }
