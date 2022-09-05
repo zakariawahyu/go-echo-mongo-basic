@@ -25,10 +25,10 @@ func GetAllUser(c echo.Context) error {
 
 	result, err := model.GetALlUser(ctx)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
@@ -36,19 +36,19 @@ func GetAllUser(c echo.Context) error {
 	for result.Next(ctx) {
 		var user entity.User
 		if err = result.Decode(&user); err != nil {
-			return c.JSON(http.StatusInternalServerError, response.UserResponse{
-				Status:  http.StatusInternalServerError,
-				Message: "error",
-				Result:  err.Error(),
+			return c.JSON(http.StatusInternalServerError, response.WebResponse{
+				Code:   http.StatusInternalServerError,
+				Status: "error",
+				Result: err.Error(),
 			})
 		}
 		users = append(users, user)
 	}
 
-	return c.JSON(http.StatusOK, response.UserResponse{
-		Status:  http.StatusOK,
-		Message: "success",
-		Result:  users,
+	return c.JSON(http.StatusOK, response.WebResponse{
+		Code:   http.StatusOK,
+		Status: "success",
+		Result: users,
 	})
 }
 
@@ -59,19 +59,19 @@ func CreateUser(c echo.Context) error {
 
 	// validate the request body
 	if err := c.Bind(&user); err != nil {
-		return c.JSON(http.StatusBadRequest, response.UserResponse{
-			Status:  http.StatusBadRequest,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusBadRequest, response.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
-	// use the validator to validate request
+	//use the validator to validate request
 	if validateErr := validate.Struct(&user); validateErr != nil {
-		return c.JSON(http.StatusBadRequest, response.UserResponse{
-			Status:  http.StatusBadRequest,
-			Message: "error",
-			Result:  validateErr.Error(),
+		return c.JSON(http.StatusBadRequest, response.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "error",
+			Result: validateErr.Error(),
 		})
 	}
 
@@ -86,16 +86,16 @@ func CreateUser(c echo.Context) error {
 
 	result, err := model.CreateUser(ctx, newUser)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusCreated, response.UserResponse{
-		Status:  http.StatusCreated,
-		Message: "success",
+	return c.JSON(http.StatusCreated, response.WebResponse{
+		Code:   http.StatusCreated,
+		Status: "success",
 		Result: &echo.Map{
 			"data": result,
 		}})
@@ -109,25 +109,25 @@ func GetUserById(c echo.Context) error {
 
 	objectId, errObj := primitive.ObjectIDFromHex(id)
 	if errObj != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  errObj.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: errObj.Error(),
 		})
 	}
 
 	if err := model.GetUserById(ctx, objectId, &user); err != nil {
-		return c.JSON(http.StatusNotFound, response.UserResponse{
-			Status:  http.StatusNotFound,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusNotFound, response.WebResponse{
+			Code:   http.StatusNotFound,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.UserResponse{
-		Status:  http.StatusOK,
-		Message: "success",
-		Result:  user,
+	return c.JSON(http.StatusOK, response.WebResponse{
+		Code:   http.StatusOK,
+		Status: "success",
+		Result: user,
 	})
 }
 
@@ -139,36 +139,36 @@ func UpdateUser(c echo.Context) error {
 
 	objectId, errObj := primitive.ObjectIDFromHex(id)
 	if errObj != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  errObj.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: errObj.Error(),
 		})
 	}
 
 	//validate request body
 	if err := c.Bind(&user); err != nil {
-		return c.JSON(http.StatusBadRequest, response.UserResponse{
-			Status:  http.StatusBadRequest,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusBadRequest, response.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
 	if err := model.GetUserById(ctx, objectId, &entity.User{}); err != nil {
-		return c.JSON(http.StatusNotFound, response.UserResponse{
-			Status:  http.StatusNotFound,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusNotFound, response.WebResponse{
+			Code:   http.StatusNotFound,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
 	//validation
 	if validateErr := validate.Struct(&user); validateErr != nil {
-		return c.JSON(http.StatusBadRequest, response.UserResponse{
-			Status:  http.StatusBadRequest,
-			Message: "error",
-			Result:  validateErr.Error(),
+		return c.JSON(http.StatusBadRequest, response.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "error",
+			Result: validateErr.Error(),
 		})
 	}
 
@@ -176,17 +176,17 @@ func UpdateUser(c echo.Context) error {
 
 	result, err := model.UpdateUser(ctx, objectId, updateUser)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  errObj.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: errObj.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.UserResponse{
-		Status:  http.StatusOK,
-		Message: "success",
-		Result:  result,
+	return c.JSON(http.StatusOK, response.WebResponse{
+		Code:   http.StatusOK,
+		Status: "success",
+		Result: result,
 	})
 }
 
@@ -197,33 +197,33 @@ func DeleteUser(c echo.Context) error {
 
 	objectID, errObj := primitive.ObjectIDFromHex(id)
 	if errObj != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  errObj.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: errObj.Error(),
 		})
 	}
 
 	if err := model.GetUserById(ctx, objectID, &entity.User{}); err != nil {
-		return c.JSON(http.StatusNotFound, response.UserResponse{
-			Status:  http.StatusNotFound,
-			Message: "error",
-			Result:  err.Error(),
+		return c.JSON(http.StatusNotFound, response.WebResponse{
+			Code:   http.StatusNotFound,
+			Status: "error",
+			Result: err.Error(),
 		})
 	}
 
 	result, err := model.DeleteUser(ctx, objectID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, response.UserResponse{
-			Status:  http.StatusInternalServerError,
-			Message: "error",
-			Result:  errObj.Error(),
+		return c.JSON(http.StatusInternalServerError, response.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "error",
+			Result: errObj.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response.UserResponse{
-		Status:  http.StatusOK,
-		Message: "error",
-		Result:  result,
+	return c.JSON(http.StatusOK, response.WebResponse{
+		Code:   http.StatusOK,
+		Status: "error",
+		Result: result,
 	})
 }
